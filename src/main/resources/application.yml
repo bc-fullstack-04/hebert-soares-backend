@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: Bootcamp Sysmap 2024 - Hebert Soares
+
+server:
+  servlet:
+    context-path: /api
