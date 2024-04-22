@@ -1,0 +1,17 @@
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\config\SpringDocOpenApiConfig.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\web\UsersController.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\domain\listeners\WalletListener.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\dto\AuthDto.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\domain\entities\Wallet.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\domain\entities\Users.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\config\RabbitConfig.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\domain\services\UsersService.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\config\CustomAuthenticationProvider.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\web\WalletController.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\domain\repositories\UsersRepository.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\BootcampSysmapApplication.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\config\ServerSecurityConfig.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\domain\enums\DayPoints.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\domain\repositories\WalletRepository.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\domain\services\WalletService.java
+C:\Users\heber\OneDrive\Área de Trabalho\hebert-soares-backend\app-user-api\src\main\java\br\com\sysmap\bootcamp\dto\WalletDto.java
