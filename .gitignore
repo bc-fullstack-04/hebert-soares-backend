@@ -5,6 +5,7 @@
 mvnw
 mvnw.cmd
 
+pom.xml
 target/
 src/
 # System Files
