@@ -42,16 +42,25 @@ public class UsersService implements UserDetailsService {
         if(usersOptional.isPresent()){
             throw new RuntimeException("User already exists");
         }
+
+        if (user.getPassword() == null || user.getEmail() == null) {
+            throw new RuntimeException("The password or email may be null");
+        }
+
         user = user.toBuilder().password(this.passwordEncoder.encode(user.getPassword())).build();
+
         Users savedUser = this.usersRepository.save(user);
+
         Wallet wallet = new Wallet();
         wallet.setUser(user);
         wallet.setBalance(new BigDecimal(0));
         wallet.setPoints(0L);
         wallet.setLastUpdate(LocalDateTime.now());
         walletRepository.save(wallet);
+
         return savedUser;
     }
+
 
     public List<Users> getAllUsers(){
         return usersRepository.findAll();
@@ -76,9 +85,6 @@ public class UsersService implements UserDetailsService {
         return usersRepository.save(currentUser);
     }
 
-
-
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Users> userAccountsOptional = this.usersRepository.findByEmail(username);
@@ -100,17 +106,6 @@ public class UsersService implements UserDetailsService {
         return AuthDto.builder().email(users.getEmail()).token(
                 Base64.getEncoder().withoutPadding().encodeToString(password.toString().getBytes())
         ).id(users.getId()).build();
-    }
-
-    private Users getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new SecurityException("No authentication found in context.");
-        }
-        String email = authentication.getName();
-        log.info("Retrieving user for email: {}", email);
-        return usersRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found for email: " + email));
     }
 
 }

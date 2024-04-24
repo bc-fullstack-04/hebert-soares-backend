@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +50,7 @@ class UsersServiceTest {
         SecurityContextHolder.setContext(securityContext);
         lenient().when(authentication.isAuthenticated()).thenReturn(true);
         System.out.println("Security context set up with authentication.");
+
     }
 
 
@@ -97,6 +99,19 @@ class UsersServiceTest {
             Exception exception = assertThrows(RuntimeException.class, () -> usersService.save(existingUser));
             assertEquals("User already exists", exception.getMessage());
         }
+
+        @Test
+        @DisplayName("Should throw exception when password is null")
+        void shouldThrowExceptionWhenPasswordIsNull() {
+            Users newUser = Users.builder()
+                    .email("email@email.com")
+                    .password(null)
+                    .build();
+
+            Exception exception = assertThrows(RuntimeException.class, () -> usersService.save(newUser));
+            assertEquals("The password or email may be null", exception.getMessage());
+            verify(usersRepository, never()).save(any(Users.class));
+        }
     }
 
     @Nested
@@ -116,6 +131,17 @@ class UsersServiceTest {
             assertTrue(result.isPresent());
             assertEquals(userId, result.get().getId());
         }
+
+        @Test
+        @DisplayName("Should return empty optional when user does not exist")
+        void shouldReturnEmptyOptionalWhenUserDoesNotExist() {
+            Long userId = 1L;
+
+            when(usersRepository.findById(userId)).thenReturn(Optional.empty());
+
+            Optional<Users> result = usersService.getUserById(userId);
+            assertTrue(result.isEmpty());
+        }
     }
 
     @Nested
@@ -132,6 +158,15 @@ class UsersServiceTest {
             List<Users> result = usersService.getAllUsers();
             assertEquals(2, result.size());
             verify(usersRepository, times(1)).findAll();
+        }
+
+        @Test
+        @DisplayName("Should return empty list when no users exist")
+        void shouldReturnEmptyListWhenNoUsersExist() {
+            when(usersRepository.findAll()).thenReturn(Collections.emptyList());
+
+            List<Users> result = usersService.getAllUsers();
+            assertTrue(result.isEmpty());
         }
     }
 
@@ -170,5 +205,4 @@ class UsersServiceTest {
             verify(usersRepository).save(any(Users.class));
         }
     }
-
 }

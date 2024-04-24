@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -41,7 +42,6 @@ class WalletServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Simulações básicas para o contexto de segurança
         SecurityContext securityContext = mock(SecurityContext.class);
         Authentication authentication = mock(Authentication.class);
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -57,7 +57,7 @@ class WalletServiceTest {
             Users user = Users.builder().email("user@email.com").build();
             Wallet wallet = new Wallet();
             wallet.setBalance(new BigDecimal("100.00"));
-            wallet.setPoints(0L);  // Ensure points are initialized
+            wallet.setPoints(0L);
 
             when(usersService.findByEmail("user@email.com")).thenReturn(user);
             when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
@@ -66,6 +66,39 @@ class WalletServiceTest {
 
             assertEquals(0, wallet.getBalance().compareTo(new BigDecimal("150.00")));
             verify(walletRepository).save(wallet);
+        }
+
+        @Test
+        @DisplayName("Should credit amount to the correct wallet")
+        void shouldCreditAmountToCorrectWallet() {
+            Users user = Users.builder().email("user@email.com").build();
+            Wallet wallet1 = new Wallet();
+            wallet1.setBalance(new BigDecimal("50.00"));
+            wallet1.setPoints(0L);
+            Wallet wallet2 = new Wallet();
+            wallet2.setBalance(new BigDecimal("100.00"));
+            wallet2.setPoints(0L);
+
+            when(usersService.findByEmail("user@email.com")).thenReturn(user);
+            when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet1));
+
+            walletService.credit(new BigDecimal("50.00"));
+
+            assertEquals(0, wallet1.getBalance().compareTo(new BigDecimal("100.00")));
+            assertEquals(0, wallet2.getBalance().compareTo(new BigDecimal("100.00")));
+            verify(walletRepository).save(wallet1);
+        }
+
+        @Test
+        @DisplayName("Should handle no existing wallet")
+        void shouldHandleNoWallet() {
+            Users user = Users.builder()
+                    .email("user@email.com")
+                    .build();
+
+            when(usersService.findByEmail("user@email.com")).thenReturn(user);
+            when(walletRepository.findByUser(any())).thenReturn(Optional.empty());
+            assertThrows(NoSuchElementException.class, () -> walletService.credit(new BigDecimal("10.00")));
         }
     }
 
@@ -80,11 +113,18 @@ class WalletServiceTest {
 
             when(usersService.findByEmail("user@email.com")).thenReturn(user);
             when(walletRepository.findByUser(user)).thenReturn(Optional.of(wallet));
-
             Optional<Wallet> result = walletService.myWallet();
 
             assertTrue(result.isPresent());
             assertEquals(wallet, result.get());
+        }
+
+        @Test
+        @DisplayName("Should return empty optional if user not found")
+        void shouldReturnEmptyOptionalIfUserNotFound() {
+            when(usersService.findByEmail(anyString())).thenReturn(null);
+            Optional<Wallet> result = walletService.myWallet();
+            assertFalse(result.isPresent());
         }
     }
 
@@ -94,7 +134,6 @@ class WalletServiceTest {
         @DisplayName("Should debit an amount successfully")
         void shouldDebitAmount() {
             WalletDto walletDto = new WalletDto("user@email.com", new BigDecimal("50.00"));
-
             Users user = Users.builder().email("user@email.com").build();
             Wallet wallet = new Wallet();
             wallet.setBalance(new BigDecimal("200.00"));
@@ -110,3 +149,4 @@ class WalletServiceTest {
         }
     }
 }
+
