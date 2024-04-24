@@ -7,7 +7,9 @@ import br.com.sysmap.bootcamp.domain.repositories.WalletRepository;
 import br.com.sysmap.bootcamp.dto.AuthDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -59,15 +61,23 @@ public class UsersService implements UserDetailsService {
         return usersRepository.findById(id);
     }
 
-    public Users updateUser(Long id, Users userDetails){
-        Users existingUser = usersRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    public Users updateUserWithCurrentUserInfo(Users userDetails) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new SecurityException("No authentication found in context or not authenticated.");
+        }
+        String currentEmail = authentication.getPrincipal().toString();
+        Users currentUser = usersRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        existingUser.setEmail(userDetails.getEmail());
-        existingUser.setPassword(userDetails.getPassword());
-        existingUser.setName(userDetails.getName());
-        return usersRepository.save(existingUser);
+        currentUser.setEmail(userDetails.getEmail());
+        currentUser.setPassword(userDetails.getPassword());
+
+        return usersRepository.save(currentUser);
     }
+
+
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -91,4 +101,16 @@ public class UsersService implements UserDetailsService {
                 Base64.getEncoder().withoutPadding().encodeToString(password.toString().getBytes())
         ).id(users.getId()).build();
     }
+
+    private Users getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new SecurityException("No authentication found in context.");
+        }
+        String email = authentication.getName();
+        log.info("Retrieving user for email: {}", email);
+        return usersRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found for email: " + email));
+    }
+
 }

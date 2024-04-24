@@ -50,13 +50,13 @@ public class AlbumService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This album already exists in the collection.");
         }else{
         BigDecimal walletValue = walletService.getBalanceUser(user.getId());
-        BigDecimal albumValue = album.getValue();
+        BigDecimal albumValue = album.getAlbum_value();
         if(walletValue.compareTo(albumValue) < 0){
             throw new RuntimeException("Insufficient balance") ;
         }
             album.setUser(getCurrentUser());
             Album albumSaved = albumRepository.save(album);
-            WalletDto walletDto = new WalletDto(albumSaved.getUser().getEmail(), albumSaved.getValue());
+            WalletDto walletDto = new WalletDto(albumSaved.getUser().getEmail(), albumSaved.getAlbum_value());
             this.template.convertAndSend(queue.getName(), walletDto);
             return albumSaved;
         }

@@ -42,7 +42,7 @@ public class Album {
     private String imageUrl;
 
     @Column(name = "VALUE", nullable = false)
-    private BigDecimal value;
+    private BigDecimal album_value;
 
     @ManyToOne
     @JoinColumn(name = "ID_USER")

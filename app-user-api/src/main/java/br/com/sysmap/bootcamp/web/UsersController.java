@@ -49,10 +49,10 @@ public class UsersController {
         return ResponseEntity.ok(this.usersService.getUserById(id));
     }
 
-    @Operation(summary = "Update user")
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Users> updateUser(@PathVariable Long id, @RequestBody Users users){
-        Users updatedUser = usersService.updateUser(id, users);
+    @Operation(summary = "Update current user")
+    @PutMapping("/update")
+    public ResponseEntity<Users> updateCurrentUser(@RequestBody Users users) {
+        Users updatedUser = usersService.updateUserWithCurrentUserInfo(users);
         return ResponseEntity.ok(updatedUser);
     }
 }

@@ -45,9 +45,7 @@ public class UsersControllerTest {
                     .password("encodedPassword")
                     .build();
             when(usersService.save(any(Users.class))).thenReturn(savedUser);
-
             ResponseEntity<Users> response = usersController.save(newUser);
-
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertEquals(savedUser, response.getBody());
         }
@@ -69,9 +67,7 @@ public class UsersControllerTest {
                     .id(1L)
                     .build();
             when(usersService.auth(any(AuthDto.class))).thenReturn(expectedDto);
-
             ResponseEntity<AuthDto> response = usersController.auth(authDto);
-
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertEquals(expectedDto, response.getBody());
         }
@@ -88,9 +84,7 @@ public class UsersControllerTest {
                     Users.builder().id(2L).email("user2@email.com").password("pass2").build()
             );
             when(usersService.getAllUsers()).thenReturn(usersList);
-
             ResponseEntity<List<Users>> response = usersController.getAllUsers();
-
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertEquals(usersList, response.getBody());
         }
@@ -106,9 +100,7 @@ public class UsersControllerTest {
             Users user = Users.builder().id(userId).email("test@test.com").password("password").build();
 
             when(usersService.getUserById(userId)).thenReturn(Optional.of(user));
-
             ResponseEntity<Optional<Users>> response = usersController.getUserById(userId);
-
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertTrue(response.getBody().isPresent());
             assertEquals(user, response.getBody().get());
@@ -116,7 +108,7 @@ public class UsersControllerTest {
     }
 
     @Nested
-    @DisplayName("PUT /users/update/{id}")
+    @DisplayName("PUT /users/update")
     class UpdateUser {
         @Test
         @DisplayName("Should update user successfully")
@@ -134,13 +126,11 @@ public class UsersControllerTest {
                     .password("newPassword")
                     .build();
 
-            when(usersService.updateUser(eq(userId), any(Users.class))).thenReturn(updatedUser);
-
-            ResponseEntity<Users> response = usersController.updateUser(userId, userToUpdate);
-
+            when(usersService.updateUserWithCurrentUserInfo(any(Users.class))).thenReturn(updatedUser);
+            ResponseEntity<Users> response = usersController.updateCurrentUser(userToUpdate);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertEquals(updatedUser, response.getBody());
-            verify(usersService).updateUser(userId, userToUpdate);
+            verify(usersService).updateUserWithCurrentUserInfo(userToUpdate);
         }
     }
 

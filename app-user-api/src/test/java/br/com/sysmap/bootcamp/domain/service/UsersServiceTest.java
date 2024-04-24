@@ -5,15 +5,16 @@ import br.com.sysmap.bootcamp.domain.entities.Wallet;
 import br.com.sysmap.bootcamp.domain.repositories.UsersRepository;
 import br.com.sysmap.bootcamp.domain.repositories.WalletRepository;
 import br.com.sysmap.bootcamp.domain.services.UsersService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
@@ -30,18 +31,26 @@ class UsersServiceTest {
 
     @Mock
     private UsersRepository usersRepository;
-
     @Mock
     private WalletRepository walletRepository;
-
     @InjectMocks
     private UsersService usersService;
-
-    @Captor
-    private ArgumentCaptor<Users> userCaptor;
-
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private SecurityContext securityContext;
+
+    @Mock
+    private Authentication authentication;
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        lenient().when(authentication.isAuthenticated()).thenReturn(true);
+        System.out.println("Security context set up with authentication.");
+    }
+
 
     @Nested
     class CreateUser {
@@ -49,7 +58,6 @@ class UsersServiceTest {
         @DisplayName("Should create a user and wallet with success")
         void shouldCreateAUserAndWallet() {
             when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-
             Users newUser = Users.builder()
                     .email("email@email.com")
                     .password("password")
@@ -64,11 +72,9 @@ class UsersServiceTest {
             newWallet.setBalance(new BigDecimal("0"));
             newWallet.setPoints(0L);
             newWallet.setLastUpdate(LocalDateTime.now());
-
             when(usersRepository.findByEmail(anyString())).thenReturn(Optional.empty());
             when(usersRepository.save(any(Users.class))).thenReturn(savedUser);
             when(walletRepository.save(any(Wallet.class))).thenReturn(newWallet);
-
             Users result = usersService.save(newUser);
 
             assertAll(
@@ -86,10 +92,9 @@ class UsersServiceTest {
                     .email("email@email.com")
                     .password("password")
                     .build();
+
             when(usersRepository.findByEmail(anyString())).thenReturn(Optional.of(existingUser));
-
             Exception exception = assertThrows(RuntimeException.class, () -> usersService.save(existingUser));
-
             assertEquals("User already exists", exception.getMessage());
         }
     }
@@ -107,9 +112,7 @@ class UsersServiceTest {
                     .build();
 
             when(usersRepository.findById(anyLong())).thenReturn(Optional.of(user));
-
             Optional<Users> result = usersService.getUserById(userId);
-
             assertTrue(result.isPresent());
             assertEquals(userId, result.get().getId());
         }
@@ -120,15 +123,13 @@ class UsersServiceTest {
         @Test
         @DisplayName("Should return all users")
         void shouldReturnAllUsers() {
-            var users = List.of(
+            List<Users> users = List.of(
                     Users.builder().id(1L).email("user1@email.com").password("pass1").build(),
                     Users.builder().id(2L).email("user2@email.com").password("pass2").build()
             );
 
             when(usersRepository.findAll()).thenReturn(users);
-
             List<Users> result = usersService.getAllUsers();
-
             assertEquals(2, result.size());
             verify(usersRepository, times(1)).findAll();
         }
@@ -136,32 +137,36 @@ class UsersServiceTest {
 
     @Nested
     class UpdateUser {
+        @BeforeEach
+        void setupUpdateUser() {
+            Authentication auth = Mockito.mock(Authentication.class);
+            SecurityContext context = Mockito.mock(SecurityContext.class);
+            when(context.getAuthentication()).thenReturn(auth);
+            when(auth.getPrincipal()).thenReturn("email@example.com");
+            when(auth.isAuthenticated()).thenReturn(true);
+            SecurityContextHolder.setContext(context);
+        }
+
         @Test
         @DisplayName("Should update user successfully")
         void shouldUpdateUserSuccessfully() {
-            Long userId = 1L;
-            Users existingUser = Users.builder()
-                    .id(userId)
-                    .email("email@email.com")
-                    .password("password")
-                    .build();
+            assertNotNull(SecurityContextHolder.getContext().getAuthentication(), "Authentication should not be null");
+            assertTrue(SecurityContextHolder.getContext().getAuthentication().isAuthenticated(), "Authentication should be marked as authenticated");
+
             Users userUpdates = Users.builder()
                     .email("newemail@email.com")
                     .password("newPassword")
                     .build();
 
-            when(usersRepository.findById(userId)).thenReturn(Optional.of(existingUser));
-            when(usersRepository.save(any(Users.class))).thenReturn(existingUser.toBuilder()
-                    .email(userUpdates.getEmail())
-                    .password(userUpdates.getPassword())
-                    .build());
-
-            Users result = usersService.updateUser(userId, userUpdates);
-
+            when(usersRepository.findByEmail("email@example.com")).thenReturn(Optional.of(Users.builder()
+                    .email("email@example.com")
+                    .password("oldPassword")
+                    .build()));
+            when(usersRepository.save(any(Users.class))).thenReturn(userUpdates);
+            Users result = usersService.updateUserWithCurrentUserInfo(userUpdates);
             assertNotNull(result);
-            assertEquals(userUpdates.getEmail(), result.getEmail());
-            assertEquals(userUpdates.getPassword(), result.getPassword());
-
+            assertEquals("newemail@email.com", result.getEmail());
+            assertEquals("newPassword", result.getPassword());
             verify(usersRepository).save(any(Users.class));
         }
     }

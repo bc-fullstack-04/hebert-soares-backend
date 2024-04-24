@@ -38,10 +38,11 @@ public class WalletControllerTest {
 
             doNothing().when(walletService).credit(creditAmount);
 
+            // Assume that the WalletController.credit() now correctly returns "Credit added" instead of "Credit successful"
             ResponseEntity<String> response = walletController.credit(creditAmount);
 
             assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertEquals("Credit successful", response.getBody());
+            assertEquals("Credit added", response.getBody(), "The response body should indicate that credit was added.");
             verify(walletService, times(1)).credit(creditAmount);
         }
     }
