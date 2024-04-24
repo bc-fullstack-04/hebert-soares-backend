@@ -5,6 +5,8 @@ Backend Project - Hebert Ferreira Soares
 
 - `app-user`: porta 8081
 - `app-integration`: porta 8082
+- `swagger-UI app-user`<a href="http://localhost:8081/api/swagger-ui/index.html#/" target="_blank">Clique aqui para acessar o Swagger UI do app-user</a>
+-  `swagger-UI app-integration` <a href="http://localhost:8082/api/swagger-ui/index.html#/" target="_blank">Clique aqui para acessar o Swagger UI do app-integration</a>
 
 ## Instalação
 
